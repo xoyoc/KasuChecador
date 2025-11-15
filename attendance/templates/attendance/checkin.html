@@ -1,0 +1,143 @@
+<!-- attendance/templates/attendance/checkin.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in - Recepción</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold text-gray-800 mb-2">Sistema de Asistencia</h1>
+                <p class="text-xl text-gray-600">Escanea tu credencial QR</p>
+                <div class="mt-4">
+                    <span class="text-3xl font-semibold text-blue-600" id="reloj"></span>
+                    <span class="block text-lg text-gray-500 mt-2" id="fecha"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="bg-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-100 border-l-4 border-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-500 text-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-900 p-6 rounded-lg shadow-lg mb-4 animate-pulse" role="alert">
+                <p class="text-2xl font-bold">{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Formulario de Check-in -->
+        <div class="bg-white rounded-2xl shadow-2xl p-12">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-8">
+                    <svg class="w-32 h-32 mx-auto text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                    </svg>
+                    <h2 class="text-3xl font-bold text-gray-800">Escanea tu código QR</h2>
+                </div>
+
+                <form method="post" id="checkinForm">
+                    {% csrf_token %}
+                    <div class="mb-6">
+                        {{ form.qr_code }}
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-2xl font-bold py-6 px-8 rounded-xl hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                        Registrar
+                    </button>
+                </form>
+
+                <div class="mt-8 text-center text-gray-500">
+                    <p class="text-lg">¿No tienes tu credencial?</p>
+                    <p class="text-sm">Contacta al departamento de Recursos Humanos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Instrucciones</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                        <span class="text-2xl font-bold text-blue-600">1</span>
+                    </div>
+                    <p class="text-gray-700">Acerca tu credencial al lector</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                        <span class="text-2xl font-bold text-blue-600">2</span>
+                    </div>
+                    <p class="text-gray-700">Espera la confirmación</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                        <span class="text-2xl font-bold text-blue-600">3</span>
+                    </div>
+                    <p class="text-gray-700">Verifica tu registro</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                        <span class="text-2xl font-bold text-blue-600">4</span>
+                    </div>
+                    <p class="text-gray-700">¡Listo!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar reloj y fecha
+        function actualizarReloj() {
+            const ahora = new Date();
+            const horas = ahora.getHours().toString().padStart(2, '0');
+            const minutos = ahora.getMinutes().toString().padStart(2, '0');
+            const segundos = ahora.getSeconds().toString().padStart(2, '0');
+
+            document.getElementById('reloj').textContent = `${horas}:${minutos}:${segundos}`;
+
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fecha').textContent = ahora.toLocaleDateString('es-MX', opciones);
+        }
+
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+
+        // Auto-focus en el campo QR
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrInput = document.querySelector('input[name="qr_code"]');
+            if (qrInput) {
+                qrInput.focus();
+            }
+        });
+
+        // Limpiar campo después de enviar
+        document.getElementById('checkinForm').addEventListener('submit', function() {
+            setTimeout(function() {
+                const qrInput = document.querySelector('input[name="qr_code"]');
+                if (qrInput) {
+                    qrInput.value = '';
+                    qrInput.focus();
+                }
+            }, 2000);
+        });
+
+        // Auto-limpiar mensajes después de 5 segundos
+        setTimeout(function() {
+            const messages = document.querySelectorAll('[role="alert"]');
+            messages.forEach(function(msg) {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(function() {
+                    msg.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

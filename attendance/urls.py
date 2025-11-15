@@ -1,4 +1,3 @@
-# attendance/urls.py
 from django.urls import path
 from . import views
 
@@ -15,16 +14,3 @@ urlpatterns = [
     path('reporte/mensual/', views.reporte_mensual_view, name='reporte_mensual'),
     path('reporte/mensual/<int:mes>/<int:anio>/', views.reporte_mensual_view, name='reporte_mensual_detalle'),
 ]
-
-# proyecto/urls.py (principal)
-"""
-from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('attendance.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-"""

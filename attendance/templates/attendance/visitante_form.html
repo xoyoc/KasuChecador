@@ -1,0 +1,192 @@
+<!-- attendance/templates/attendance/visitante_form.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Visitantes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8 mb-8 text-center">
+                <svg class="w-20 h-20 mx-auto text-purple-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Registro de Visitantes</h1>
+                <p class="text-lg text-gray-600">Completa el formulario para recibir tu código QR de acceso</p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Información Personal -->
+                    <div class="border-b pb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Información Personal</h2>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                {{ form.nombre.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.nombre.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    {{ form.email.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    {{ form.telefono.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ form.telefono.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                {{ form.empresa.label }}
+                            </label>
+                            {{ form.empresa }}
+                            {% if form.empresa.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.empresa.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Detalles de la Visita -->
+                    <div class="border-b pb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Detalles de la Visita</h2>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                {{ form.departamento_visita.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.departamento_visita }}
+                            {% if form.departamento_visita.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.departamento_visita.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    {{ form.fecha_visita.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.fecha_visita }}
+                                {% if form.fecha_visita.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ form.fecha_visita.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">
+                                    {{ form.hora_visita.label }}
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.hora_visita }}
+                                {% if form.hora_visita.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ form.hora_visita.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">
+                                {{ form.motivo.label }}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.motivo }}
+                            {% if form.motivo.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.motivo.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Aviso de privacidad -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-700">
+                            <strong>Aviso de Privacidad:</strong> Los datos proporcionados serán utilizados únicamente para el registro y control de acceso a nuestras instalaciones.
+                            Recibirás un correo electrónico con tu código QR de acceso.
+                        </p>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex gap-4">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition duration-200 shadow-lg">
+                            Registrar Visita
+                        </button>
+                        <a href="/" class="flex-1 bg-gray-300 text-gray-700 font-bold py-4 px-6 rounded-xl hover:bg-gray-400 transition duration-200 text-center shadow-lg">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-3">¿Qué sucederá después?</h3>
+                <ul class="space-y-2 text-gray-700">
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Recibirás un correo con tu código QR de acceso
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        El departamento será notificado de tu visita
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Al llegar, escanea tu QR en la tablet de recepción
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        No olvides escanear nuevamente al salir
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Establecer fecha mínima como hoy
+        document.addEventListener('DOMContentLoaded', function() {
+            const fechaInput = document.querySelector('input[type="date"]');
+            if (fechaInput) {
+                const hoy = new Date().toISOString().split('T')[0];
+                fechaInput.min = hoy;
+            }
+        });
+    </script>
+</body>
+</html>

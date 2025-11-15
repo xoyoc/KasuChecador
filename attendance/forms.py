@@ -1,210 +1,62 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import CreateView, ListView
-from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Count, Q
-from datetime import datetime, timedelta
-from .models import (
-    Empleado, Asistencia, TipoMovimiento, Visitante,
-    RegistroVisita, TiempoExtra, ConfiguracionSistema
-)
-from .forms import VisitanteForm, CheckInForm
-from .utils import enviar_email_visitante, generar_reporte_diario, generar_reporte_quincenal
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django import forms
+from .models import Visitante, Empleado
 
-# Vista para tablet de recepción
-def checkin_view(request):
-    """Vista principal para la tablet de checkin en recepción"""
-    if request.method == 'POST':
-        form = CheckInForm(request.POST)
-        if form.is_valid():
-            qr_code = form.cleaned_data['qr_code']
-
-            # Verificar si es empleado
-            try:
-                empleado = Empleado.objects.get(qr_uuid=qr_code, activo=True)
-                return procesar_checkin_empleado(request, empleado)
-            except Empleado.DoesNotExist:
-                pass
-
-            # Verificar si es visitante
-            try:
-                if qr_code.startswith('VISITANTE:'):
-                    uuid_visitante = qr_code.replace('VISITANTE:', '')
-                    visitante = Visitante.objects.get(qr_uuid=uuid_visitante)
-                    return procesar_checkin_visitante(request, visitante)
-            except Visitante.DoesNotExist:
-                pass
-
-            messages.error(request, 'Código QR no válido')
-    else:
-        form = CheckInForm()
-
-    return render(request, 'attendance/checkin.html', {'form': form})
-
-def procesar_checkin_empleado(request, empleado):
-    """Procesa el check-in de un empleado"""
-    hoy = timezone.now().date()
-    ultima_asistencia = Asistencia.objects.filter(
-        empleado=empleado,
-        fecha=hoy
-    ).order_by('-hora').first()
-
-    # Determinar el tipo de movimiento
-    if not ultima_asistencia:
-        tipo = TipoMovimiento.ENTRADA
-    elif ultima_asistencia.tipo_movimiento == TipoMovimiento.ENTRADA:
-        tipo = TipoMovimiento.SALIDA_COMIDA
-    elif ultima_asistencia.tipo_movimiento == TipoMovimiento.SALIDA_COMIDA:
-        tipo = TipoMovimiento.ENTRADA_COMIDA
-    else:
-        tipo = TipoMovimiento.SALIDA
-
-    asistencia = Asistencia.objects.create(
-        empleado=empleado,
-        tipo_movimiento=tipo
+class CheckInForm(forms.Form):
+    qr_code = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+            'placeholder': 'Escanea tu código QR',
+            'autofocus': True,
+            'autocomplete': 'off'
+        }),
+        label=''
     )
 
-    # Calcular retardo si es entrada
-    if tipo == TipoMovimiento.ENTRADA:
-        config = ConfiguracionSistema.objects.first()
-        if config:
-            asistencia.calcular_retardo(str(config.hora_entrada))
-            asistencia.save()
-
-    mensaje = f"{empleado.user.get_full_name()} - {tipo}"
-    if asistencia.retardo:
-        mensaje += f" (Retardo: {asistencia.minutos_retardo} min)"
-
-    messages.success(request, mensaje)
-    return redirect('checkin')
-
-def procesar_checkin_visitante(request, visitante):
-    """Procesa el check-in de un visitante"""
-    # Verificar si ya tiene un registro abierto
-    registro_abierto = RegistroVisita.objects.filter(
-        visitante=visitante,
-        hora_salida__isnull=True
-    ).first()
-
-    if registro_abierto:
-        # Registrar salida
-        registro_abierto.hora_salida = timezone.now()
-        registro_abierto.save()
-        messages.success(request, f"Salida registrada: {visitante.nombre}")
-    else:
-        # Registrar entrada
-        RegistroVisita.objects.create(visitante=visitante)
-        messages.success(request, f"Entrada registrada: {visitante.nombre} - Visita a {visitante.departamento_visita}")
-
-    return redirect('checkin')
-
-# Vista de formulario de visitantes (pública)
-class VisitanteCreateView(CreateView):
-    model = Visitante
-    form_class = VisitanteForm
-    template_name = 'attendance/visitante_form.html'
-    success_url = '/visitante/exito/'
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        # Enviar email con QR al visitante y al departamento
-        enviar_email_visitante(self.object)
-        messages.success(self.request, 'Tu visita ha sido registrada. Revisa tu correo para el código QR.')
-        return response
-
-def visitante_exito(request):
-    """Vista de confirmación después de registrar visita"""
-    return render(request, 'attendance/visitante_exito.html')
-
-# Dashboard para gerencia
-def dashboard_view(request):
-    """Dashboard con estadísticas de asistencia"""
-    hoy = timezone.now().date()
-
-    # Estadísticas del día
-    asistencias_hoy = Asistencia.objects.filter(
-        fecha=hoy,
-        tipo_movimiento=TipoMovimiento.ENTRADA
-    )
-
-    total_empleados = Empleado.objects.filter(activo=True).count()
-    llegaron_hoy = asistencias_hoy.count()
-    retardos_hoy = asistencias_hoy.filter(retardo=True).count()
-
-    # Empleados con retardos consecutivos (últimos 5 días)
-    fecha_inicio = hoy - timedelta(days=5)
-    empleados_retardos = []
-
-    for empleado in Empleado.objects.filter(activo=True):
-        retardos = Asistencia.objects.filter(
-            empleado=empleado,
-            fecha__gte=fecha_inicio,
-            fecha__lte=hoy,
-            tipo_movimiento=TipoMovimiento.ENTRADA,
-            retardo=True
-        ).count()
-
-        if retardos >= 3:
-            empleados_retardos.append({
-                'empleado': empleado,
-                'retardos': retardos
-            })
-
-    # Visitas del día
-    visitas_hoy = RegistroVisita.objects.filter(
-        hora_entrada__date=hoy
-    ).select_related('visitante', 'visitante__departamento_visita')
-
-    context = {
-        'total_empleados': total_empleados,
-        'llegaron_hoy': llegaron_hoy,
-        'retardos_hoy': retardos_hoy,
-        'empleados_retardos': empleados_retardos,
-        'visitas_hoy': visitas_hoy,
-        'fecha': hoy,
-    }
-
-    return render(request, 'attendance/dashboard.html', context)
-
-# Vista de reportes
-def reporte_mensual_view(request, mes=None, anio=None):
-    """Vista para consultar reportes mensuales"""
-    if not mes or not anio:
-        hoy = timezone.now()
-        mes = hoy.month
-        anio = hoy.year
-
-    # Obtener todas las asistencias del mes
-    asistencias = Asistencia.objects.filter(
-        fecha__month=mes,
-        fecha__year=anio
-    ).select_related('empleado', 'empleado__user')
-
-    # Agrupar por empleado
-    empleados_data = {}
-    for asistencia in asistencias:
-        emp_id = asistencia.empleado.id
-        if emp_id not in empleados_data:
-            empleados_data[emp_id] = {
-                'empleado': asistencia.empleado,
-                'total_dias': 0,
-                'retardos': 0,
-                'total_minutos_retardo': 0,
-            }
-
-        if asistencia.tipo_movimiento == TipoMovimiento.ENTRADA:
-            empleados_data[emp_id]['total_dias'] += 1
-            if asistencia.retardo:
-                empleados_data[emp_id]['retardos'] += 1
-                empleados_data[emp_id]['total_minutos_retardo'] += asistencia.minutos_retardo
-
-    context = {
-        'mes': mes,
-        'anio': anio,
-        'empleados_data': empleados_data.values(),
-    }
-
-    return render(request, 'attendance/reporte_mensual.html', context)
+class VisitanteForm(forms.ModelForm):
+    class Meta:
+        model = Visitante
+        fields = ['nombre', 'email', 'empresa', 'telefono', 'departamento_visita', 'motivo', 'fecha_visita', 'hora_visita']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': 'Nombre completo'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': 'correo@ejemplo.com'
+            }),
+            'empresa': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': 'Nombre de la empresa (opcional)'
+            }),
+            'telefono': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': '55-1234-5678'
+            }),
+            'departamento_visita': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            }),
+            'motivo': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': 'Motivo de la visita',
+                'rows': 3
+            }),
+            'fecha_visita': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'type': 'date'
+            }),
+            'hora_visita': forms.TimeInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'type': 'time'
+            }),
+        }
+        labels = {
+            'nombre': 'Nombre Completo',
+            'email': 'Correo Electrónico',
+            'empresa': 'Empresa',
+            'telefono': 'Teléfono',
+            'departamento_visita': 'Departamento a Visitar',
+            'motivo': 'Motivo de la Visita',
+            'fecha_visita': 'Fecha de Visita',
+            'hora_visita': 'Hora de Visita',
+        }
