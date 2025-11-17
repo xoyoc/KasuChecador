@@ -1,0 +1,171 @@
+<!-- attendance/templates/attendance/visitante_exito.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visita Registrada Exitosamente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- Animación de éxito -->
+            <div class="bg-white rounded-3xl shadow-2xl p-12 text-center">
+                <!-- Icono de check animado -->
+                <div class="mb-8 relative">
+                    <div class="w-32 h-32 mx-auto bg-green-100 rounded-full flex items-center justify-center animate-pulse">
+                        <svg class="w-20 h-20 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <!-- Círculos decorativos animados -->
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-40 bg-green-200 rounded-full opacity-20 animate-ping"></div>
+                </div>
+
+                <!-- Título -->
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                    ¡Visita Registrada!
+                </h1>
+
+                <p class="text-xl text-gray-600 mb-8">
+                    Tu visita ha sido confirmada exitosamente
+                </p>
+
+                <!-- Información importante -->
+                <div class="bg-blue-50 rounded-2xl p-8 mb-8 text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Pasos a Seguir
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 flex-shrink-0">
+                                1
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Revisa tu correo electrónico</h3>
+                                <p class="text-gray-600">Te hemos enviado un email con tu código QR de acceso. Revisa también tu carpeta de spam.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 flex-shrink-0">
+                                2
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Guarda o imprime tu código QR</h3>
+                                <p class="text-gray-600">Puedes mostrarlo desde tu teléfono o imprimirlo para mayor comodidad.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 flex-shrink-0">
+                                3
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Al llegar a recepción</h3>
+                                <p class="text-gray-600">Escanea tu código QR en la tablet de registro de visitas.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-4 flex-shrink-0">
+                                4
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Al finalizar tu visita</h3>
+                                <p class="text-gray-600">Escanea nuevamente tu código QR para registrar tu salida.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-6 mb-8 text-left">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-bold text-yellow-800">Importante</h3>
+                            <p class="text-sm text-yellow-700 mt-1">
+                                El departamento que visitarás también ha sido notificado de tu visita.
+                                Si tienes alguna duda o necesitas cambiar la fecha/hora, contacta directamente con ellos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-4 px-8 rounded-xl hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                        Volver al Inicio
+                    </a>
+                    <a href="{% url 'visitante_registro' %}" class="bg-gray-200 text-gray-700 font-bold py-4 px-8 rounded-xl hover:bg-gray-300 transform hover:scale-105 transition duration-200 shadow-lg">
+                        Registrar Otra Visita
+                    </a>
+                </div>
+
+                <!-- Información de contacto -->
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <p class="text-gray-500 text-sm">
+                        ¿No recibiste el correo? Espera unos minutos o contáctanos
+                    </p>
+                    <p class="text-gray-400 text-xs mt-2">
+                        Este proceso puede tardar hasta 5 minutos
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta de consejos -->
+            <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    Consejos para tu Visita
+                </h3>
+                <ul class="space-y-3 text-gray-600">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Llega con 10 minutos de anticipación
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Trae una identificación oficial vigente
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Asegúrate de que tu teléfono tenga batería suficiente
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Sigue las indicaciones del personal de seguridad
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-scroll suave al cargar
+        window.addEventListener('load', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
