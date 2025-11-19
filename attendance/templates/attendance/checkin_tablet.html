@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-In | Sistema de Asistencia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+        #reader {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        #reader video {
+            border-radius: 12px;
+            border: 4px solid #3b82f6;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 h-screen flex flex-col">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-blue-900 mb-2">Sistema de Asistencia</h1>
+            <p class="text-2xl text-gray-600">Escanea tu código QR</p>
+            <div class="mt-4 text-lg text-gray-500">
+                <span id="current-time" class="font-semibold"></span>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div id="messages-container" class="mb-6">
+            {% for message in messages %}
+            <div class="fade-in max-w-2xl mx-auto bg-{% if message.tags == 'error' %}red{% else %}green{% endif %}-100 border border-{% if message.tags == 'error' %}red{% else %}green{% endif %}-400 text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-700 px-6 py-4 rounded-lg text-xl text-center shadow-lg" role="alert">
+                <strong class="font-bold">
+                    {% if message.tags == 'error' %}❌{% else %}✅{% endif %}
+                </strong>
+                <span class="block sm:inline ml-2">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- QR Scanner Container -->
+        <div class="flex-1 flex flex-col items-center justify-center">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full">
+                <!-- Scanner Status -->
+                <div id="scanner-status" class="text-center mb-6">
+                    <div class="pulse-animation inline-block">
+                        <svg class="w-16 h-16 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.99M12 12h-5m5 0v3m0 0h-5m9-3V8m0 0V5m0 3h2m-2 0h-2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-xl text-gray-600 mt-4 font-medium">Cámara activada - Acerca tu código QR</p>
+                </div>
+
+                <!-- QR Reader -->
+                <div id="reader" class="mb-6"></div>
+
+                <!-- Manual Input Toggle -->
+                <div class="text-center mt-6">
+                    <button onclick="toggleManualInput()" class="text-blue-600 hover:text-blue-800 underline text-lg">
+                        ¿Problemas con la cámara? Ingresa el código manualmente
+                    </button>
+                </div>
+
+                <!-- Manual Input Form (Hidden by default) -->
+                <div id="manual-input-form" class="hidden mt-6">
+                    <form method="post" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-gray-700 text-lg font-semibold mb-2">Código QR:</label>
+                            {{ form.qr_code }}
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-xl transition duration-200">
+                            Registrar Asistencia
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="mt-8 text-center text-gray-600">
+                <p class="text-lg">📱 Visitantes: <a href="{% url 'visitante_registro' %}" class="text-blue-600 hover:text-blue-800 underline font-semibold">Registra tu visita aquí</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let html5QrCode;
+        let isScanning = false;
+        let lastScanTime = 0;
+        const SCAN_COOLDOWN = 3000; // 3 segundos entre escaneos
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('current-time').textContent = now.toLocaleDateString('es-MX', options);
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Hide messages after 5 seconds
+        setTimeout(() => {
+            const messagesContainer = document.getElementById('messages-container');
+            if (messagesContainer) {
+                messagesContainer.style.opacity = '0';
+                messagesContainer.style.transition = 'opacity 0.5s';
+                setTimeout(() => messagesContainer.remove(), 500);
+            }
+        }, 5000);
+
+        // Toggle manual input form
+        function toggleManualInput() {
+            const form = document.getElementById('manual-input-form');
+            const reader = document.getElementById('reader');
+            const status = document.getElementById('scanner-status');
+
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                reader.style.display = 'none';
+                status.style.display = 'none';
+                if (html5QrCode) {
+                    html5QrCode.stop();
+                }
+            } else {
+                form.classList.add('hidden');
+                reader.style.display = 'block';
+                status.style.display = 'block';
+                startScanner();
+            }
+        }
+
+        // Process QR code scan
+        function onScanSuccess(decodedText, decodedResult) {
+            const currentTime = Date.now();
+
+            // Prevent multiple rapid scans
+            if (isScanning || (currentTime - lastScanTime) < SCAN_COOLDOWN) {
+                return;
+            }
+
+            isScanning = true;
+            lastScanTime = currentTime;
+
+            // Stop scanner temporarily
+            html5QrCode.pause(true);
+
+            // Show processing message
+            document.getElementById('scanner-status').innerHTML = `
+                <div class="text-center">
+                    <svg class="animate-spin h-16 w-16 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-xl text-gray-600 mt-4 font-medium">Procesando...</p>
+                </div>
+            `;
+
+            // Submit form
+            submitQRCode(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // Handle scan failure silently (too many errors in console)
+        }
+
+        // Submit QR code to server
+        function submitQRCode(qrCode) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "checkin_tablet" %}';
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+
+            const qrInput = document.createElement('input');
+            qrInput.type = 'hidden';
+            qrInput.name = 'qr_code';
+            qrInput.value = qrCode;
+
+            form.appendChild(csrfInput);
+            form.appendChild(qrInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Start QR code scanner
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+
+            const config = {
+                fps: 10,
+                qrbox: { width: 300, height: 300 },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                console.error("Error starting scanner:", err);
+                // Try with front camera if back camera fails
+                html5QrCode.start(
+                    { facingMode: "user" },
+                    config,
+                    onScanSuccess,
+                    onScanFailure
+                ).catch(err => {
+                    console.error("Error starting scanner with front camera:", err);
+                    document.getElementById('scanner-status').innerHTML = `
+                        <div class="text-red-600">
+                            <p class="text-xl font-semibold">❌ No se pudo activar la cámara</p>
+                            <p class="text-lg mt-2">Por favor, permite el acceso a la cámara o usa el ingreso manual</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Initialize scanner on page load
+        window.addEventListener('load', () => {
+            startScanner();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode) {
+                html5QrCode.stop();
+            }
+        });
+    </script>
+</body>
+</html>

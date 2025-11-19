@@ -57,7 +57,7 @@
                 <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2">Año</label>
                     <select name="anio" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        {% for y in "2024 2025 2026 2027 2028"|split:" " %}
+                        {% for y in years_disponibles %}
                         <option value="{{ y }}" {% if anio|stringformat:"i" == y %}selected{% endif %}>{{ y }}</option>
                         {% endfor %}
                     </select>

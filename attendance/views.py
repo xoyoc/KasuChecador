@@ -44,6 +44,36 @@ def checkin_view(request):
 
     return render(request, 'attendance/checkin.html', {'form': form})
 
+# Vista para tablet de recepción
+def checkin_view_tablet(request):
+    """Vista principal para la tablet de checkin en recepción"""
+    if request.method == 'POST':
+        form = CheckInForm(request.POST)
+        if form.is_valid():
+            qr_code = form.cleaned_data['qr_code']
+
+            # Verificar si es empleado
+            try:
+                empleado = Empleado.objects.get(qr_uuid=qr_code, activo=True)
+                return procesar_checkin_empleado(request, empleado)
+            except Empleado.DoesNotExist:
+                pass
+
+            # Verificar si es visitante
+            try:
+                if qr_code.startswith('VISITANTE:'):
+                    uuid_visitante = qr_code.replace('VISITANTE:', '')
+                    visitante = Visitante.objects.get(qr_uuid=uuid_visitante)
+                    return procesar_checkin_visitante(request, visitante)
+            except Visitante.DoesNotExist:
+                pass
+
+            messages.error(request, 'Código QR no válido')
+    else:
+        form = CheckInForm()
+
+    return render(request, 'attendance/checkin_tablet.html', {'form': form})
+
 def procesar_checkin_empleado(request, empleado):
     """Procesa el check-in de un empleado"""
     hoy = timezone.now().date()
@@ -205,6 +235,7 @@ def reporte_mensual_view(request, mes=None, anio=None):
         'mes': mes,
         'anio': anio,
         'empleados_data': empleados_data.values(),
+        'years_disponibles': range(2024, datetime.now().year + 1), # Generacion de years
     }
 
     return render(request, 'attendance/reporte_mensual.html', context)
