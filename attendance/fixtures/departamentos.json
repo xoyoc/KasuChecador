@@ -1,0 +1,74 @@
+[
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 1,
+  "fields": {
+    "nombre": "Dirección / Gerencia General",
+    "email": "gerencia@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 2,
+  "fields": {
+    "nombre": "Operaciones",
+    "email": "operaciones@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 3,
+  "fields": {
+    "nombre": "Servicio al Cliente",
+    "email": "servicio.cliente@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 4,
+  "fields": {
+    "nombre": "Administración y Finanzas",
+    "email": "administracion@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 5,
+  "fields": {
+    "nombre": "Compras y Logística / Cadena de Suministro",
+    "email": "compras.logistica@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 6,
+  "fields": {
+    "nombre": "Mantenimiento y Taller",
+    "email": "mantenimiento@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 7,
+  "fields": {
+    "nombre": "Seguridad",
+    "email": "seguridad@empresa.com"
+  }
+},
+{
+  "model": "Departamento",
+  "app_label": "attendance",
+  "pk": 8,
+  "fields": {
+    "nombre": "Servicios Generales",
+    "email": "servicios.generales@empresa.com"
+  }
+}
+]
