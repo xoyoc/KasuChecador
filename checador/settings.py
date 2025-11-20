@@ -25,7 +25,13 @@ SECRET_KEY = 'django-insecure-%opi-6o8m6qzs5v00$43q5+*rddr(n%so2svodu*^hyk5srwu)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '.oyster-app-afeyk.ondigitalocean.app/',
+    '.digitaloceanspaces.com',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+]
 
 # Application definition
 
@@ -139,3 +145,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'America/Mexico_City'
 CELERY_ENABLE_UTC = False
+
+# Seguridad
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+CSRF_TRUSTED_ORIGINS = [
+    'https://oyster-app-afeyk.ondigitalocean.app/',
+]
