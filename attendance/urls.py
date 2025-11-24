@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     # Tablet de recepción
     path('checkin/', views.checkin_view, name='checkin'),
-    path('checkin_tablet/', views.checkin_view_tablet, name='checkin_tablet'),
+    path('', views.checkin_view_tablet, name='checkin_tablet'),
 
     # Registro de visitantes (público)
     path('visitante/registro/', views.VisitanteCreateView.as_view(), name='visitante_registro'),
