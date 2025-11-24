@@ -31,7 +31,7 @@ SECRET_KEY = env.str('SECRET_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    '.checador-kasu-app.ondigitalocean.app',
+    '.checador-kasu-app-ec7yo.ondigitalocean.app',
     '.digitaloceanspaces.com',
     'localhost',
     '127.0.0.1',
@@ -172,7 +172,7 @@ CELERY_ENABLE_UTC = False
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_TRUSTED_ORIGINS = [
-    'https://checador-kasu-app.ondigitalocean.app',
+    'https://checador-kasu-app-ec7yo.ondigitalocean.app/',
 ]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
