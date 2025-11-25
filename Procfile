@@ -1,1 +1,1 @@
-web: gunicorn checador.wsgi -b 0.0.0.0:8080
+web: gunicorn -c gunicorn_config.py checador.wsgi:application
