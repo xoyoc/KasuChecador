@@ -83,29 +83,29 @@ WSGI_APPLICATION = 'checador.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-if DEBUG:
-    print("Modo de desarollo....OJO")
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+
+# print("Modo de desarollo....OJO")
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+print("Base de Datos Digital Ocean....OJO")
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env.str('DATABASE'),
+        "USER": env.str('USERNAME'),
+        "PASSWORD": env.str('PASSWORD'),
+        "HOST": env.str('HOST'),
+        "PORT": env.str('PORT'),
+        # "OPTIONS":{
+        #     'ssl_mode': 'REQUIRED',
+        # }
     }
-else:
-    print("Modo de produccion....OJO")
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": env.str('DATABASE'),
-            "USER": env.str('USERNAME'),
-            "PASSWORD": env.str('PASSWORD'),
-            "HOST": env.str('HOST'),
-            "PORT": env.str('PORT'),
-            # "OPTIONS":{
-            #     'ssl_mode': 'REQUIRED',
-            # }
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
