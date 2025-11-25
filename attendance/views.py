@@ -15,6 +15,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 
 # Health check endpoint para DigitalOcean
+@csrf_exempt
 def health_check(request):
     """Simple health check endpoint que responde 200 OK"""
     return JsonResponse({"status": "ok"})
