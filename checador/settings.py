@@ -86,7 +86,7 @@ DATABASES = {
         "USER": env.str('USERNAME'),
         "PASSWORD": env.str('PASSWORD'),
         "HOST": env.str('HOST'),
-        "PORT": env.str('PORT'),
+        "PORT": env.str('DB_PORT', default='25060'),  # Puerto específico de MySQL
         "OPTIONS": {
             'ssl_mode': env.str('SSLMODE', default='REQUIRED'),
             'connect_timeout': 10,  # Timeout de conexión en segundos
