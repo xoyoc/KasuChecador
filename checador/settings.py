@@ -173,6 +173,7 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_TRUSTED_ORIGINS = [
     'https://checador-kasu-app-ec7yo.ondigitalocean.app',
+    'https://*.checador-kasu-app-ec7yo.ondigitalocean.app',
 ]
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
