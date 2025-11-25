@@ -1,0 +1,79 @@
+name: kasuchecador
+region: sfo
+
+services:
+  - name: web
+    github:
+      repo: Transporte-Kasu/KasuChecador
+      branch: main
+      deploy_on_push: true
+    
+    source_dir: /
+    
+    # El buildpack detecta Python automáticamente
+    build_command: ""
+    
+    # Procfile define el comando web
+    run_command: ""
+    
+    http_port: 8080
+    
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    
+    health_check:
+      http_path: /health/
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    
+    routes:
+      - path: /
+    
+    envs:
+      - key: DEBUG
+        value: "False"
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: ALLOWED_HOSTS
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: USERNAME
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: HOST
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: PORT
+        value: "25060"
+        scope: RUN_TIME
+      
+      - key: DATABASE
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: SSLMODE
+        value: "REQUIRED"
+        scope: RUN_TIME
+      
+      - key: EMAIL_HOST_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      
+      - key: CSRF_TRUSTED_ORIGINS
+        scope: RUN_TIME
+        type: SECRET
