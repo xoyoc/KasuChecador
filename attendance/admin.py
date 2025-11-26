@@ -1,6 +1,6 @@
-# attendance/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
+from django import forms
 from .models import (
     Departamento, Empleado, Asistencia, TiempoExtra,
     Visitante, RegistroVisita, ConfiguracionSistema, TipoHorario
@@ -28,12 +28,23 @@ class TipoHorarioAdmin(admin.ModelAdmin):
         }),
     )
 
+# Formulario para la acción de asignar horario
+class AsignarHorarioForm(forms.Form):
+    _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+    tipo_horario = forms.ModelChoiceField(
+        queryset=TipoHorario.objects.filter(activo=True),
+        required=True,
+        label="Tipo de Horario",
+        help_text="Selecciona el tipo de horario a asignar"
+    )
+
 @admin.register(Empleado)
 class EmpleadoAdmin(admin.ModelAdmin):
     list_display = ['codigo_empleado', 'get_nombre', 'departamento', 'tipo_horario', 'tiempo_extra_habilitado', 'activo', 'ver_qr']
     list_filter = ['activo', 'tiempo_extra_habilitado', 'departamento', 'tipo_horario']
     search_fields = ['codigo_empleado', 'user__first_name', 'user__last_name']
     readonly_fields = ['qr_uuid', 'mostrar_qr']
+    actions = ['asignar_tipo_horario']
 
     def get_nombre(self, obj):
         return obj.user.get_full_name()
@@ -50,6 +61,43 @@ class EmpleadoAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="max-width: 300px;"/>', obj.qr_code.url)
         return '-'
     mostrar_qr.short_description = 'Código QR'
+
+    def asignar_tipo_horario(self, request, queryset):
+        """Acción para asignar tipo de horario a múltiples empleados"""
+        from django.shortcuts import render, redirect
+        from django.contrib import messages
+
+        # Si es POST, procesar el formulario
+        if 'apply' in request.POST:
+            form = AsignarHorarioForm(request.POST)
+
+            if form.is_valid():
+                tipo_horario = form.cleaned_data['tipo_horario']
+                count = queryset.update(tipo_horario=tipo_horario)
+
+                self.message_user(
+                    request,
+                    f'Se asignó el tipo de horario "{tipo_horario.nombre}" a {count} empleado(s) exitosamente.',
+                    messages.SUCCESS
+                )
+                return redirect(request.get_full_path())
+
+        # Si es GET, mostrar el formulario
+        form = AsignarHorarioForm(initial={
+            '_selected_action': queryset.values_list('pk', flat=True)
+        })
+
+        context = {
+            'title': 'Asignar Tipo de Horario',
+            'queryset': queryset,
+            'form': form,
+            'action_name': 'asignar_tipo_horario',
+            'opts': self.model._meta,
+        }
+
+        return render(request, 'admin/asignar_horario.html', context)
+
+    asignar_tipo_horario.short_description = 'Asignar tipo de horario a empleados seleccionados'
 
     fieldsets = (
         ('Información Básica', {
