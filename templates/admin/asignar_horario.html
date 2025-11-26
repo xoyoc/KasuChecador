@@ -1,0 +1,68 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Inicio</a>
+    &rsaquo; <a href="{% url 'admin:attendance_empleado_changelist' %}">Empleados</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form action="" method="post">
+    {% csrf_token %}
+
+    <div class="form-row">
+        <p>Se asignará el tipo de horario a los siguientes <strong>{{ queryset.count }}</strong> empleado(s):</p>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; max-height: 300px; overflow-y: auto;">
+        <ul style="list-style-type: none; padding: 0; margin: 0;">
+            {% for empleado in queryset %}
+            <li style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">
+                <strong>{{ empleado.codigo_empleado }}</strong> - {{ empleado.user.get_full_name }}
+                {% if empleado.departamento %}
+                    <span style="color: #666;">({{ empleado.departamento.nombre }})</span>
+                {% endif %}
+                {% if empleado.tipo_horario %}
+                    <span style="color: #007bff; font-size: 0.9em;">- Actual: {{ empleado.tipo_horario.nombre }}</span>
+                {% else %}
+                    <span style="color: #dc3545; font-size: 0.9em;">- Sin horario asignado</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="form-row">
+        {{ form.as_p }}
+    </div>
+
+    <div class="submit-row">
+        <input type="submit" name="apply" value="Asignar horario" class="default" />
+        <a href="{% url 'admin:attendance_empleado_changelist' %}" class="button cancel-link">Cancelar</a>
+    </div>
+</form>
+
+<style>
+    .cancel-link {
+        background: #fff;
+        border: 1px solid #ddd;
+        color: #333;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 4px;
+        display: inline-block;
+        margin-left: 10px;
+    }
+    .cancel-link:hover {
+        background: #f8f9fa;
+        border-color: #999;
+    }
+</style>
+{% endblock %}
