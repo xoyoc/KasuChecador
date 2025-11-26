@@ -73,7 +73,22 @@ class EmpleadoAdmin(admin.ModelAdmin):
 
             if form.is_valid():
                 tipo_horario = form.cleaned_data['tipo_horario']
-                count = queryset.update(tipo_horario=tipo_horario)
+
+                # Obtener los IDs de los empleados seleccionados del formulario
+                selected_ids = request.POST.getlist('_selected_action')
+
+                # Si no hay IDs en el POST, usar el queryset original
+                if not selected_ids:
+                    self.message_user(
+                        request,
+                        'Error: No se pudieron identificar los empleados seleccionados.',
+                        messages.ERROR
+                    )
+                    return redirect(request.get_full_path())
+
+                # Filtrar empleados por los IDs
+                empleados_a_actualizar = queryset.model.objects.filter(pk__in=selected_ids)
+                count = empleados_a_actualizar.update(tipo_horario=tipo_horario)
 
                 self.message_user(
                     request,
