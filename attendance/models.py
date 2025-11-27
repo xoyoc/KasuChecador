@@ -7,6 +7,8 @@ from io import BytesIO
 from django.core.files import File
 import uuid
 
+from checador.storage_backends import MediaStorage
+
 class Departamento(models.Model):
     nombre = models.CharField(max_length=100)
     email = models.EmailField()
@@ -40,7 +42,7 @@ class Empleado(models.Model):
     codigo_empleado = models.CharField(max_length=20, unique=True)
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, null=True)
     tipo_horario = models.ForeignKey(TipoHorario, on_delete=models.SET_NULL, null=True, blank=True)
-    qr_code = models.ImageField(upload_to='qr_codes/', blank=True)
+    qr_code = models.ImageField(storage=MediaStorage(), upload_to='qr_codes/', blank=True)
     qr_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     tiempo_extra_habilitado = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
@@ -91,7 +93,7 @@ class Asistencia(models.Model):
         if self.tipo_movimiento == TipoMovimiento.ENTRADA:
             # Obtener configuración del tipo de horario del empleado
             tipo_horario = self.empleado.tipo_horario
-            
+
             # Si el empleado tiene tipo de horario asignado, usar esa configuración
             if tipo_horario:
                 # Para turnos de 24 horas, verificar el ciclo
@@ -102,13 +104,13 @@ class Asistencia(models.Model):
                         tipo_movimiento=TipoMovimiento.ENTRADA,
                         fecha__lt=self.fecha
                     ).order_by('-fecha', '-hora').first()
-                    
+
                     if ultima_entrada:
                         # Ciclo: 24h trabajo + 24h descanso = 48h total
                         ultima_entrada_dt = datetime.combine(ultima_entrada.fecha, ultima_entrada.hora)
                         entrada_actual_dt = datetime.combine(self.fecha, self.hora)
                         diferencia_horas = (entrada_actual_dt - ultima_entrada_dt).total_seconds() / 3600
-                        
+
                         # El empleado debería entrar ~48 horas después (permitir tolerancia de 2 horas)
                         if diferencia_horas < 46:  # Menos de 46 horas = entrada anticipada
                             self.retardo = False
@@ -124,7 +126,7 @@ class Asistencia(models.Model):
                         self.retardo = False
                         self.minutos_retardo = 0
                     return
-                
+
                 # Para horarios regulares, usar hora_entrada del tipo de horario
                 if tipo_horario.hora_entrada:
                     hora_esperada = tipo_horario.hora_entrada
@@ -137,7 +139,7 @@ class Asistencia(models.Model):
                 # Fallback a configuración global o parámetros
                 hora_esperada = datetime.strptime(hora_entrada_esperada, "%H:%M:%S").time()
                 tolerancia = timedelta(minutes=minutos_tolerancia)
-            
+
             hora_limite = (datetime.combine(datetime.today(), hora_esperada) + tolerancia).time()
 
             if self.hora > hora_limite:
@@ -178,7 +180,7 @@ class Visitante(models.Model):
     motivo = models.TextField()
     fecha_visita = models.DateField()
     hora_visita = models.TimeField()
-    qr_code = models.ImageField(upload_to='qr_visitantes/', blank=True)
+    qr_code = models.ImageField(storage=MediaStorage(), upload_to='qr_visitantes/', blank=True)
     qr_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     confirmado = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
