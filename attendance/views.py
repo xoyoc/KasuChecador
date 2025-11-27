@@ -266,7 +266,7 @@ def dashboard_view(request):
 
     visitas_hoy = Visitante.objects.filter(
         fecha_visita=hoy
-    ).select_related('visitante', 'visitante__departamento_visita').order_by('-hora_visita')
+    ).select_related('departamento_visita').order_by('-hora_visita')
 
     context = {
         'total_empleados': total_empleados,
