@@ -29,7 +29,7 @@ def enviar_email_visitante(visitante):
             </div>
             <div style="text-align: center; margin: 30px 0;">
                 <p><strong>Tu código QR de acceso:</strong></p>
-                <img src="cid:qr_code" alt="QR Code" style="max-width: 250px;">
+                <img src="{visitante.qr_code.url}" alt="QR Code" style="max-width: 250px;">
                 <p style="font-size: 12px; color: #6b7280;">Presenta este código al llegar a recepción</p>
             </div>
         </div>
