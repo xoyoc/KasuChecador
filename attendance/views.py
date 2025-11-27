@@ -87,6 +87,28 @@ def checkin_view(request):
 # Vista para tablet de recepción
 def checkin_view_tablet(request):
     """Vista principal para la tablet de checkin en recepción"""
+    if request.method == 'POST':
+        form = CheckInForm(request.POST)
+        if form.is_valid():
+            qr_code = form.cleaned_data['qr_code']
+
+            # Verificar si es empleado
+            try:
+                empleado = Empleado.objects.get(qr_uuid=qr_code, activo=True)
+                return procesar_checkin_empleado(request, empleado, redirect_to='checkin_tablet')
+            except Empleado.DoesNotExist:
+                pass
+
+            # Verificar si es visitante
+            try:
+                if qr_code.startswith('VISITANTE:'):
+                    uuid_visitante = qr_code.replace('VISITANTE:', '')
+                    visitante = Visitante.objects.get(qr_uuid=uuid_visitante)
+                    return procesar_checkin_visitante(request, visitante, redirect_to='checkin_tablet')
+            except Visitante.DoesNotExist:
+                pass
+
+            messages.error(request, 'Código QR no válido')
     else:
         form = CheckInForm()
 
