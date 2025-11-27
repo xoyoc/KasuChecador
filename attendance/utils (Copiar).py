@@ -1,4 +1,4 @@
-from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -37,19 +37,19 @@ def enviar_email_visitante(visitante):
     </html>
     """
 
-    # Usar EmailMultiAlternatives en lugar de EmailMessage
-    email_visitante = EmailMultiAlternatives(
+    email_visitante = EmailMessage(
         subject_visitante,
-        'Tu visita ha sido confirmada. Por favor revisa el contenido HTML del email.',
+        html_message,
         settings.DEFAULT_FROM_EMAIL,
         [visitante.email]
     )
-    email_visitante.attach_alternative(html_message, "text/html")
+    email_visitante.content_subtype = 'html'
 
     # Adjuntar QR
     if visitante.qr_code:
         with open(visitante.qr_code.path, 'rb') as f:
             email_visitante.attach('qr_code.png', f.read(), 'image/png')
+            email_visitante.attach_alternative(html_message, "text/html")
 
     email_visitante.send(fail_silently=False)
 
@@ -71,34 +71,34 @@ def enviar_email_visitante(visitante):
     </html>
     """
 
-    email_depto = EmailMultiAlternatives(
+    email_depto = EmailMessage(
         subject_depto,
-        'Nueva visita programada. Por favor revisa el contenido HTML del email.',
+        mensaje_depto,
         settings.DEFAULT_FROM_EMAIL,
         [visitante.departamento_visita.email]
     )
-    email_depto.attach_alternative(mensaje_depto, "text/html")
+    email_depto.content_subtype = 'html'
     email_depto.send(fail_silently=False)
 
 
 def generar_reporte_semanal():
     """Genera y envía el reporte semanal todos los jueves"""
     hoy = timezone.now().date()
-
+    
     # Calcular el rango de la semana (lunes a jueves)
     # Si hoy es jueves (weekday = 3), la semana va desde el lunes anterior hasta hoy
     dias_desde_lunes = hoy.weekday()  # 0=lunes, 3=jueves
     fecha_inicio = hoy - timedelta(days=dias_desde_lunes)
     fecha_fin = hoy
-
+    
     # Obtener configuración
     config = ConfiguracionSistema.objects.first()
     if not config:
         return
-
+    
     # Obtener datos por empleado
     empleados = Empleado.objects.filter(activo=True)
-
+    
     html_reporte = f"""
     <html>
     <head>
@@ -130,10 +130,10 @@ def generar_reporte_semanal():
                 <th>Faltas</th>
             </tr>
     """
-
+    
     # Recolectar empleados con retardos consecutivos
     empleados_retardos_consecutivos = []
-
+    
     for empleado in empleados:
         asistencias = Asistencia.objects.filter(
             empleado=empleado,
@@ -141,11 +141,11 @@ def generar_reporte_semanal():
             fecha__lte=fecha_fin,
             tipo_movimiento=TipoMovimiento.ENTRADA
         )
-
+        
         dias_asistidos = asistencias.values('fecha').distinct().count()
         retardos = asistencias.filter(retardo=True).count()
         total_min_retardo = sum(asistencias.filter(retardo=True).values_list('minutos_retardo', flat=True))
-
+        
         # Calcular días/turnos laborales según tipo de horario
         tipo_horario = empleado.tipo_horario
         if tipo_horario and tipo_horario.es_turno_24h:
@@ -163,7 +163,7 @@ def generar_reporte_semanal():
                     dias_laborales += 1
                 fecha_actual += timedelta(days=1)
             faltas = dias_laborales - dias_asistidos
-
+        
         html_reporte += f"""
             <tr>
                 <td>{empleado.user.get_full_name()}</td>
@@ -175,7 +175,7 @@ def generar_reporte_semanal():
                 <td>{faltas}</td>
             </tr>
         """
-
+        
         # Detectar empleados con retardos consecutivos (3 o más retardos en la semana)
         if retardos >= 3:
             empleados_retardos_consecutivos.append({
@@ -183,9 +183,9 @@ def generar_reporte_semanal():
                 'codigo': empleado.codigo_empleado,
                 'retardos': retardos
             })
-
+    
     html_reporte += "</table>"
-
+    
     # Agregar alerta de retardos consecutivos si existen
     if empleados_retardos_consecutivos:
         html_reporte += """
@@ -199,7 +199,7 @@ def generar_reporte_semanal():
                     <th>Retardos (esta semana)</th>
                 </tr>
         """
-
+        
         for emp in empleados_retardos_consecutivos:
             html_reporte += f"""
                 <tr>
@@ -208,19 +208,19 @@ def generar_reporte_semanal():
                     <td>{emp['retardos']}</td>
                 </tr>
             """
-
+        
         html_reporte += "</table></div>"
-
+    
     html_reporte += "</body></html>"
-
+    
     # Enviar email
-    email = EmailMultiAlternatives(
+    email = EmailMessage(
         f'Reporte Semanal de Asistencias - Semana del {fecha_inicio.strftime("%d/%m/%Y")}',
-        'Reporte semanal de asistencias. Por favor revisa el contenido HTML.',
+        html_reporte,
         settings.DEFAULT_FROM_EMAIL,
         [config.email_gerente]
     )
-    email.attach_alternative(html_reporte, "text/html")
+    email.content_subtype = 'html'
     email.send(fail_silently=False)
 
 
@@ -340,13 +340,13 @@ def generar_reporte_diario():
     html_reporte += "</body></html>"
 
     # Enviar email
-    email = EmailMultiAlternatives(
+    email = EmailMessage(
         f'Reporte Diario de Asistencia - {hoy.strftime("%d/%m/%Y")}',
-        'Reporte diario de asistencias. Por favor revisa el contenido HTML.',
+        html_reporte,
         settings.DEFAULT_FROM_EMAIL,
         [config.email_gerente]
     )
-    email.attach_alternative(html_reporte, "text/html")
+    email.content_subtype = 'html'
     email.send(fail_silently=False)
 
 
@@ -416,7 +416,7 @@ def generar_reporte_quincenal(dia):
         dias_asistidos = asistencias.values('fecha').distinct().count()
         retardos = asistencias.filter(retardo=True).count()
         total_min_retardo = sum(asistencias.filter(retardo=True).values_list('minutos_retardo', flat=True))
-
+        
         # Calcular días/turnos laborales según tipo de horario
         tipo_horario = empleado.tipo_horario
         if tipo_horario and tipo_horario.es_turno_24h:
@@ -444,13 +444,13 @@ def generar_reporte_quincenal(dia):
     html_reporte += "</table></body></html>"
 
     # Enviar email
-    email = EmailMultiAlternatives(
+    email = EmailMessage(
         f'Reporte Quincenal - {periodo} - {hoy.strftime("%B %Y")}',
-        'Reporte quincenal de asistencias. Por favor revisa el contenido HTML.',
+        html_reporte,
         settings.DEFAULT_FROM_EMAIL,
         [config.email_gerente]
     )
-    email.attach_alternative(html_reporte, "text/html")
+    email.content_subtype = 'html'
     email.send(fail_silently=False)
 
 
