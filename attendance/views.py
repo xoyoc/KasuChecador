@@ -25,18 +25,18 @@ def db_status(request):
     """Check database connection status"""
     from django.db import connection
     import socket
-    
+
     try:
         # Configurar timeout
         default_timeout = socket.getdefaulttimeout()
         socket.setdefaulttimeout(5.0)
-        
+
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             result = cursor.fetchone()
-        
+
         socket.setdefaulttimeout(default_timeout)
-        
+
         return JsonResponse({
             "status": "connected",
             "database": connection.settings_dict['NAME'],
@@ -126,7 +126,7 @@ def procesar_checkin_empleado(request, empleado, redirect_to='checkin'):
 
     # Obtener tipo de horario del empleado
     tipo_horario = empleado.tipo_horario
-    
+
     # Determinar el tipo de movimiento según el horario
     if not ultima_asistencia:
         tipo = TipoMovimiento.ENTRADA
@@ -154,7 +154,7 @@ def procesar_checkin_empleado(request, empleado, redirect_to='checkin'):
                 tipo = TipoMovimiento.SALIDA
             else:
                 tipo = TipoMovimiento.ENTRADA
-    
+
     # Validar horario de comida si aplica
     if tipo == TipoMovimiento.SALIDA_COMIDA:
         if tipo_horario and tipo_horario.tiene_horario_comida:
@@ -162,7 +162,7 @@ def procesar_checkin_empleado(request, empleado, redirect_to='checkin'):
             if tipo_horario.hora_inicio_comida and tipo_horario.hora_fin_comida:
                 if not (tipo_horario.hora_inicio_comida <= ahora <= tipo_horario.hora_fin_comida):
                     messages.error(
-                        request, 
+                        request,
                         f"No puedes salir a comer fuera del horario permitido ({tipo_horario.hora_inicio_comida.strftime('%H:%M')} - {tipo_horario.hora_fin_comida.strftime('%H:%M')})"
                     )
                     return redirect(redirect_to)
@@ -266,7 +266,7 @@ def dashboard_view(request):
 
     # Visitas del día
     visitas_hoy = RegistroVisita.objects.filter(
-        hora_entrada__date=hoy
+        fecha_visita__date=hoy
     ).select_related('visitante', 'visitante__departamento_visita')
 
     context = {
